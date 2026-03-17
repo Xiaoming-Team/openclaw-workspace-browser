@@ -6,7 +6,7 @@ const ejs = require('ejs');
 
 const app = express();
 const PORT = 8888;
-const BASE_DIR = path.join(__dirname, '..', 'research');
+const BASE_DIR = path.resolve(__dirname, '..', 'research');
 
 // Set EJS as template engine
 app.set('view engine', 'ejs');
@@ -35,21 +35,21 @@ function getFileInfo(filePath) {
         const lines = content.split('\n');
         let title = path.basename(filePath);
         let desc = '';
-        
+
         for (const line of lines) {
             // Get H1 title
             if (line.startsWith('# ')) {
                 title = line.substring(2).trim();
             }
         }
-        
+
         for (const line of lines) {
             const trimmed = line.trim();
             // Skip: headers (#), list items, table headers (|)
             // But INCLUDE blockquotes (>) - they often contain the file description
-            if (trimmed && 
-                !trimmed.startsWith('#') && 
-                !trimmed.startsWith('-') && 
+            if (trimmed &&
+                !trimmed.startsWith('#') &&
+                !trimmed.startsWith('-') &&
                 !trimmed.startsWith('*') &&
                 !trimmed.startsWith('|') &&
                 !/^\d+\.\s/.test(trimmed)) {
@@ -71,21 +71,21 @@ function getProjectInfo(folderName) {
         const lines = content.split('\n');
         let title = folderName;
         let desc = '';
-        
+
         for (const line of lines) {
             if (line.startsWith('# ')) {
                 title = line.substring(2).trim();
                 break;
             }
         }
-        
+
         for (const line of lines) {
             const trimmed = line.trim();
             // Skip: headers (#), list items (- or * or numbers.), table headers (|)
             // But INCLUDE blockquotes (>) - they often contain the file description
-            if (trimmed && 
-                !trimmed.startsWith('#') && 
-                !trimmed.startsWith('-') && 
+            if (trimmed &&
+                !trimmed.startsWith('#') &&
+                !trimmed.startsWith('-') &&
                 !trimmed.startsWith('*') &&
                 !trimmed.startsWith('|') &&
                 !/^\d+\.\s/.test(trimmed)) {
@@ -93,7 +93,7 @@ function getProjectInfo(folderName) {
                 break;
             }
         }
-        
+
         return { title, desc };
     } catch (e) {
         return { title: folderName, desc: '' };
@@ -124,12 +124,12 @@ function buildBreadcrumb(relPath) {
     const parts = relPath.split('/').filter(p => p);
     let breadcrumbPath = '';
     const breadcrumbItems = ['<a href="/">🏠 首页</a>'];
-    
+
     for (let i = 0; i < parts.length; i++) {
         breadcrumbPath += (i > 0 ? '/' : '') + parts[i];
         breadcrumbItems.push(`<a href="/${breadcrumbPath}/">${parts[i]}</a>`);
     }
-    
+
     return breadcrumbItems;
 }
 
@@ -137,34 +137,68 @@ function buildBreadcrumb(relPath) {
 async function generateIndex(reqPath) {
     const items = [];
     const dirs = fs.readdirSync(reqPath, { withFileTypes: true }).filter(d => !d.name.startsWith(".") && !["node_modules", "__pycache__"].includes(d.name));
-    
-    // 分离文件夹和文件
-    const folders = dirs.filter(d => d.isDirectory()).sort((a, b) => a.name.localeCompare(b.name));
-    const files = dirs.filter(d => !d.isDirectory() && d.name.endsWith('.md')).sort((a, b) => a.name.localeCompare(b.name));
-    const sortedDirs = [...folders, ...files];
-    
+
+    // 分离文件夹和文件（显示所有文件，不仅仅是 .md）
+    const folders = dirs.filter(d => d.isDirectory());
+    const files = dirs.filter(d => !d.isDirectory()).sort((a, b) => a.name.localeCompare(b.name));
+
+    // 按文件夹内文件的最新修改时间排序（最新的在最上面）
+    const sortedFolders = folders.map(folder => {
+        const fullPath = path.join(reqPath, folder.name);
+        let latestMtime = 0;
+        try {
+            const filesInFolder = fs.readdirSync(fullPath, { withFileTypes: true });
+            for (const file of filesInFolder) {
+                if (!file.name.startsWith(".")) {
+                    const filePath = path.join(fullPath, file.name);
+                    try {
+                        const stat = fs.statSync(filePath);
+                        if (stat.mtimeMs > latestMtime) {
+                            latestMtime = stat.mtimeMs;
+                        }
+                    } catch (e) {
+                        // skip
+                    }
+                }
+            }
+        } catch (e) {
+            // skip
+        }
+        return { folder, latestMtime };
+    }).sort((a, b) => b.latestMtime - a.latestMtime).map(item => item.folder);
+
+    const sortedDirs = [...sortedFolders, ...files];
+
     // Build breadcrumb
     let relPath = path.relative(BASE_DIR, reqPath);
     if (relPath === reqPath) relPath = '';
     const breadcrumbItems = buildBreadcrumb(relPath);
-    
+
     for (const dir of sortedDirs) {
         const fullPath = path.join(reqPath, dir.name);
         const relPath = path.relative(BASE_DIR, fullPath);
-        
+
         if (dir.isDirectory()) {
             const proj = getProjectInfo(dir.name);
             const title = proj.title || `📁 ${dir.name}`;
             const desc = proj.desc || '';
             items.push(`<a href="/${relPath}/" class="item folder"><div class="item-path">${relPath}/</div><div class="item-title">${title}</div><div class="item-desc">${desc}</div></a>`);
-        } else if (dir.name.endsWith('.md')) {
-            const fileInfo = getFileInfo(fullPath);
-            const title = fileInfo.title || `📄 ${dir.name}`;
-            const desc = fileInfo.desc || '';
+        } else {
+            // 所有文件：Markdown 文件显示标题和描述，其他文件显示文件名作为标题
+            let title, desc;
+            if (dir.name.endsWith('.md')) {
+                const fileInfo = getFileInfo(fullPath);
+                title = fileInfo.title || `📄 ${dir.name}`;
+                desc = fileInfo.desc || '';
+            } else {
+                // 非 Markdown 文件：用文件名作为标题
+                title = `📄 ${dir.name}`;
+                desc = relPath;
+            }
             items.push(`<a href="/${relPath}" class="item file"><div class="item-path">${relPath}</div><div class="item-title">${title}</div><div class="item-desc">${desc}</div></a>`);
         }
     }
-    
+
     return await ejs.renderFile(path.join(__dirname, 'views', 'layout.ejs'), {
         title: '🦀 小明的研究资料',
         content: items.join(''),
@@ -178,21 +212,21 @@ async function generatePage(filepath) {
     const rawContent = readFile(filepath);
     const mdHtml = marked.parse(rawContent);
     const processedHtml = autolink(mdHtml);
-    
+
     const title = path.basename(filepath);
     const relPath = path.relative(BASE_DIR, filepath);
-    
+
     // Build breadcrumb
     const parts = relPath.split('/');
     let breadcrumbPath = '';
     const breadcrumbItems = ['<a href="/">🏠 首页</a>'];
-    
+
     for (let i = 0; i < parts.length - 1; i++) {
         breadcrumbPath += (i > 0 ? '/' : '') + parts[i];
         breadcrumbItems.push(`<a href="/${breadcrumbPath}/">${parts[i]}</a>`);
     }
     breadcrumbItems.push(`<span>${parts[parts.length - 1]}</span>`);
-    
+
     return await ejs.renderFile(path.join(__dirname, 'views', 'layout.ejs'), {
         title: title,
         content: `<div id="rendered" class="content">${processedHtml}</div><pre id="raw" style="display:none;background:#1e293b;color:#e2e8f0;padding:20px;border-radius:8px;overflow:auto;font-size:14px;white-space:pre-wrap;word-wrap:break-word;">${rawContent.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`,
@@ -211,13 +245,13 @@ app.get('/', async (req, res) => {
 });
 
 app.use(async (req, res) => {
-    let reqPath = path.join(BASE_DIR, decodeURIComponent(req.path).replace(/\/$/, ''));
-    
+    let reqPath = path.resolve(BASE_DIR, decodeURIComponent(req.path).replace(/^\//, ''));
+
     // Security: prevent directory traversal
     if (!reqPath.startsWith(BASE_DIR)) {
         return res.status(403).send('Forbidden');
     }
-    
+
     if (fs.existsSync(reqPath)) {
         const stat = fs.statSync(reqPath);
         if (stat.isDirectory()) {
@@ -227,7 +261,12 @@ app.use(async (req, res) => {
             const html = await generatePage(reqPath);
             res.send(html);
         } else {
-            res.sendFile(reqPath);
+            // 非 Markdown 文件：用静态文件中间件处理
+            return express.static(BASE_DIR, {
+                index: false,
+                dotfiles: 'ignore',
+                extensions: false
+            })(req, res, () => {});
         }
     } else {
         res.status(404).send('Not Found');
