@@ -1,0 +1,6 @@
+<div class="breadcrumb-nav">
+    <%- breadcrumbItems.join(' <span>›</span> ') %>
+    <% if (showToggle) { %>
+    <button id="toggleBtn" onclick="toggleView()" style="margin-left:auto;padding:4px 12px;background:rgba(255,255,255,0.2);border:none;border-radius:4px;color:white;cursor:pointer;font-size:12px;">📄 原文</button>
+    <% } %>
+</div>
