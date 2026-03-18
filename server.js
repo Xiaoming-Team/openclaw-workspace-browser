@@ -6,273 +6,310 @@ const ejs = require('ejs');
 
 const app = express();
 const PORT = 8888;
-const BASE_DIR = path.resolve(__dirname, '..', 'research');
+const BASE_DIR = path.resolve(process.env.HOME, '.openclaw', 'workspace');
+const PINNED_FOLDERS = ['Blog', 'Games', 'Research'];
+const SKIP_NAMES = new Set(['node_modules', '__pycache__', '.git']);
 
-// Set EJS as template engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+// Configure marked
+marked.setOptions({ gfm: true, breaks: true });
 
-// Configure marked - wrap tables in div for horizontal scroll
-marked.setOptions({
-    gfm: true,
-    breaks: true
-});
-
-const originalRender = marked.parse;
-marked.parse = function(content) {
-    let html = originalRender.call(this, content);
-    // Wrap tables in three-layer structure: wrapper > scroll-container > table
-    // Pattern: <table>...</table> -> <div class="md-table-wrapper"><button class="table-fullscreen-btn">⛶ 全屏</button><div class="table-scroll-container"><table class="md-table">...</table></div></div>
-    html = html.replace(/<table>/g, '<div class="md-table-wrapper"><button class="table-fullscreen-btn" onclick="toggleTableFullscreen(this)">⛶ 全屏</button><div class="table-scroll-container"><table class="md-table">');
-    html = html.replace(/<\/table>/g, '</table></div></div>');
-    return html;
+// Wrap tables with fullscreen button
+const origParse = marked.parse.bind(marked);
+marked.parse = function (content) {
+  let html = origParse(content);
+  html = html.replace(/<table>/g,
+    '<div class="md-table-wrapper"><button class="table-fullscreen-btn" onclick="toggleTableFullscreen(this)">⛶ 全屏</button><div class="table-scroll-container"><table class="md-table">');
+  html = html.replace(/<\/table>/g, '</table></div></div>');
+  return html;
 };
 
-// Get file title and description from markdown file
-function getFileInfo(filePath) {
-    try {
-        const content = fs.readFileSync(filePath, 'utf-8');
-        const lines = content.split('\n');
-        let title = path.basename(filePath);
-        let desc = '';
-
-        for (const line of lines) {
-            // Get H1 title
-            if (line.startsWith('# ')) {
-                title = line.substring(2).trim();
-            }
-        }
-
-        for (const line of lines) {
-            const trimmed = line.trim();
-            // Skip: headers (#), list items, table headers (|)
-            // But INCLUDE blockquotes (>) - they often contain the file description
-            if (trimmed &&
-                !trimmed.startsWith('#') &&
-                !trimmed.startsWith('-') &&
-                !trimmed.startsWith('*') &&
-                !trimmed.startsWith('|') &&
-                !/^\d+\.\s/.test(trimmed)) {
-                desc = trimmed.substring(0, 100);
-                break;
-            }
-        }
-        return { title, desc };
-    } catch (e) {
-        return { title: path.basename(filePath), desc: '' };
-    }
-}
-
-// Read project info dynamically from README.md
-function getProjectInfo(folderName) {
-    const readmePath = path.join(BASE_DIR, folderName, 'README.md');
-    try {
-        const content = fs.readFileSync(readmePath, 'utf-8');
-        const lines = content.split('\n');
-        let title = folderName;
-        let desc = '';
-
-        for (const line of lines) {
-            if (line.startsWith('# ')) {
-                title = line.substring(2).trim();
-                break;
-            }
-        }
-
-        for (const line of lines) {
-            const trimmed = line.trim();
-            // Skip: headers (#), list items (- or * or numbers.), table headers (|)
-            // But INCLUDE blockquotes (>) - they often contain the file description
-            if (trimmed &&
-                !trimmed.startsWith('#') &&
-                !trimmed.startsWith('-') &&
-                !trimmed.startsWith('*') &&
-                !trimmed.startsWith('|') &&
-                !/^\d+\.\s/.test(trimmed)) {
-                desc = trimmed.substring(0, 100);
-                break;
-            }
-        }
-
-        return { title, desc };
-    } catch (e) {
-        return { title: folderName, desc: '' };
-    }
-}
-
-function autolink(html) {
-    return html.replace(/(<a[^>]*href=["'])([^"']+)(["'][^>]*>)/g, (match, prefix, url, suffix) => {
-        return prefix + url + suffix;
-    }).replace(/(?<!href=["'])(https?:\/\/[^\s<>"')]+)/g, '<a href="$1" target="_blank">$1</a>');
-}
-
-// Read file with encoding detection
-function readFile(filepath) {
-    const encodings = ['utf-8', 'gbk', 'gb2312', 'latin1'];
-    for (const enc of encodings) {
-        try {
-            return fs.readFileSync(filepath, enc);
-        } catch (e) {
-            continue;
-        }
-    }
-    return '';
-}
-
-// Generate breadcrumb items
-function buildBreadcrumb(relPath) {
-    const parts = relPath.split('/').filter(p => p);
-    let breadcrumbPath = '';
-    const breadcrumbItems = ['<a href="/">🏠 首页</a>'];
-
-    for (let i = 0; i < parts.length; i++) {
-        breadcrumbPath += (i > 0 ? '/' : '') + parts[i];
-        breadcrumbItems.push(`<a href="/${breadcrumbPath}/">${parts[i]}</a>`);
-    }
-
-    return breadcrumbItems;
-}
-
-// Generate folder index (async)
-async function generateIndex(reqPath) {
-    const items = [];
-    const dirs = fs.readdirSync(reqPath, { withFileTypes: true }).filter(d => !d.name.startsWith(".") && !["node_modules", "__pycache__"].includes(d.name));
-
-    // 分离文件夹和文件（显示所有文件，不仅仅是 .md）
-    const folders = dirs.filter(d => d.isDirectory());
-    const files = dirs.filter(d => !d.isDirectory()).sort((a, b) => a.name.localeCompare(b.name));
-
-    // 按文件夹内文件的最新修改时间排序（最新的在最上面）
-    const sortedFolders = folders.map(folder => {
-        const fullPath = path.join(reqPath, folder.name);
-        let latestMtime = 0;
-        try {
-            const filesInFolder = fs.readdirSync(fullPath, { withFileTypes: true });
-            for (const file of filesInFolder) {
-                if (!file.name.startsWith(".")) {
-                    const filePath = path.join(fullPath, file.name);
-                    try {
-                        const stat = fs.statSync(filePath);
-                        if (stat.mtimeMs > latestMtime) {
-                            latestMtime = stat.mtimeMs;
-                        }
-                    } catch (e) {
-                        // skip
-                    }
-                }
-            }
-        } catch (e) {
-            // skip
-        }
-        return { folder, latestMtime };
-    }).sort((a, b) => b.latestMtime - a.latestMtime).map(item => item.folder);
-
-    const sortedDirs = [...sortedFolders, ...files];
-
-    // Build breadcrumb
-    let relPath = path.relative(BASE_DIR, reqPath);
-    if (relPath === reqPath) relPath = '';
-    const breadcrumbItems = buildBreadcrumb(relPath);
-
-    for (const dir of sortedDirs) {
-        const fullPath = path.join(reqPath, dir.name);
-        const relPath = path.relative(BASE_DIR, fullPath);
-
-        if (dir.isDirectory()) {
-            const proj = getProjectInfo(dir.name);
-            const title = proj.title || `📁 ${dir.name}`;
-            const desc = proj.desc || '';
-            items.push(`<a href="/${relPath}/" class="item folder"><div class="item-path">${relPath}/</div><div class="item-title">${title}</div><div class="item-desc">${desc}</div></a>`);
-        } else {
-            // 所有文件：Markdown 文件显示标题和描述，其他文件显示文件名作为标题
-            let title, desc;
-            if (dir.name.endsWith('.md')) {
-                const fileInfo = getFileInfo(fullPath);
-                title = fileInfo.title || `📄 ${dir.name}`;
-                desc = fileInfo.desc || '';
-            } else {
-                // 非 Markdown 文件：用文件名作为标题
-                title = `📄 ${dir.name}`;
-                desc = relPath;
-            }
-            items.push(`<a href="/${relPath}" class="item file"><div class="item-path">${relPath}</div><div class="item-title">${title}</div><div class="item-desc">${desc}</div></a>`);
-        }
-    }
-
-    return await ejs.renderFile(path.join(__dirname, 'views', 'layout.ejs'), {
-        title: '🦀 小明的研究资料',
-        content: items.join(''),
-        breadcrumbItems: breadcrumbItems,
-        showToggle: false
-    });
-}
-
-// Generate content page (async)
-async function generatePage(filepath) {
-    const rawContent = readFile(filepath);
-    const mdHtml = marked.parse(rawContent);
-    const processedHtml = autolink(mdHtml);
-
-    const title = path.basename(filepath);
-    const relPath = path.relative(BASE_DIR, filepath);
-
-    // Build breadcrumb
-    const parts = relPath.split('/');
-    let breadcrumbPath = '';
-    const breadcrumbItems = ['<a href="/">🏠 首页</a>'];
-
-    for (let i = 0; i < parts.length - 1; i++) {
-        breadcrumbPath += (i > 0 ? '/' : '') + parts[i];
-        breadcrumbItems.push(`<a href="/${breadcrumbPath}/">${parts[i]}</a>`);
-    }
-    breadcrumbItems.push(`<span>${parts[parts.length - 1]}</span>`);
-
-    return await ejs.renderFile(path.join(__dirname, 'views', 'layout.ejs'), {
-        title: title,
-        content: `<div id="rendered" class="content">${processedHtml}</div><pre id="raw" style="display:none;background:#1e293b;color:#e2e8f0;padding:20px;border-radius:8px;overflow:auto;font-size:14px;white-space:pre-wrap;word-wrap:break-word;">${rawContent.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`,
-        breadcrumbItems: breadcrumbItems,
-        showToggle: true
-    });
-}
-
-// Serve static files
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes
+// Static server for running HTML files (games, etc.)
+app.use('/static-run', express.static(BASE_DIR));
+
+// ── helpers ──────────────────────────────────────────────
+
+function safeStat(p) {
+  try { return fs.statSync(p); } catch { return null; }
+}
+
+function readUtf8(p) {
+  try { return fs.readFileSync(p, 'utf-8'); } catch { return ''; }
+}
+
+/** Extract H1 title and first prose line from markdown text */
+function extractMdInfo(text) {
+  const lines = text.split('\n');
+  let title = null, desc = '';
+  for (const l of lines) {
+    if (!title && l.startsWith('# ')) { title = l.slice(2).trim(); continue; }
+    if (title) {
+      const t = l.trim();
+      if (t && !t.startsWith('#') && !t.startsWith('-') && !t.startsWith('*')
+        && !t.startsWith('|') && !/^\d+\.\s/.test(t)) {
+        desc = t.slice(0, 120);
+        break;
+      }
+    }
+  }
+  // If no title found, try again for desc from beginning
+  if (!title) {
+    for (const l of lines) {
+      const t = l.trim();
+      if (t && !t.startsWith('#') && !t.startsWith('-') && !t.startsWith('*')
+        && !t.startsWith('|') && !/^\d+\.\s/.test(t)) {
+        desc = t.slice(0, 120);
+        break;
+      }
+    }
+  }
+  return { title, desc };
+}
+
+/** Get display info for a file */
+function getFileInfo(fullPath, name) {
+  if (name.endsWith('.md')) {
+    const info = extractMdInfo(readUtf8(fullPath));
+    return {
+      title: info.title || name.replace(/\.md$/i, ''),
+      desc: info.desc
+    };
+  }
+  return { title: name, desc: '' };
+}
+
+/** Get display info for a folder */
+function getFolderInfo(fullPath, name) {
+  const readmePath = path.join(fullPath, 'README.md');
+  if (fs.existsSync(readmePath)) {
+    const info = extractMdInfo(readUtf8(readmePath));
+    return { title: info.title || name, desc: info.desc };
+  }
+  return { title: name, desc: '' };
+}
+
+/** Get modification time of an entry (for folders, use folder's own mtime) */
+function getMtime(fullPath) {
+  const st = safeStat(fullPath);
+  return st ? st.mtimeMs : 0;
+}
+
+/**
+ * Sort directory entries per requirements:
+ * - isRoot=true: pinned first (Blog/Games/Research), then non-hidden dirs, hidden dirs, non-hidden files, hidden files
+ * - isRoot=false: non-hidden dirs, hidden dirs, non-hidden files, hidden files
+ * Within each group: sort by mtime descending
+ */
+function sortEntries(entries, isRoot) {
+  const pinned = [];
+  const normalDirs = [];
+  const hiddenDirs = [];
+  const normalFiles = [];
+  const hiddenFiles = [];
+
+  for (const e of entries) {
+    if (SKIP_NAMES.has(e.name)) continue;
+    const isHidden = e.name.startsWith('.');
+    const isDir = e.isDirectory();
+
+    if (isRoot && isDir) {
+      const pinnedIdx = PINNED_FOLDERS.findIndex(p => p.toLowerCase() === e.name.toLowerCase());
+      if (pinnedIdx >= 0) { e._pinnedIdx = pinnedIdx; pinned.push(e); continue; }
+    }
+
+    if (isDir) {
+      (isHidden ? hiddenDirs : normalDirs).push(e);
+    } else {
+      (isHidden ? hiddenFiles : normalFiles).push(e);
+    }
+  }
+
+  const byMtimeDesc = (a, b) => b._mtime - a._mtime;
+  pinned.sort((a, b) => a._pinnedIdx - b._pinnedIdx);
+  normalDirs.sort(byMtimeDesc);
+  hiddenDirs.sort(byMtimeDesc);
+  normalFiles.sort(byMtimeDesc);
+  hiddenFiles.sort(byMtimeDesc);
+
+  return [...pinned, ...normalDirs, ...hiddenDirs, ...normalFiles, ...hiddenFiles];
+}
+
+/** Build breadcrumb HTML items from a relative path (relative to BASE_DIR) */
+function buildBreadcrumb(relPath) {
+  const items = ['<a href="/">🏠 首页</a>'];
+  if (!relPath) return items;
+  const parts = relPath.split('/').filter(Boolean);
+  let acc = '';
+  for (const p of parts) {
+    acc += (acc ? '/' : '') + p;
+    items.push(`<a href="/${acc}/">${p}</a>`);
+  }
+  return items;
+}
+
+/** Check if entry should show a run button */
+function shouldShowRunBtn(fullPath, name, isDir) {
+  if (!isDir && name.endsWith('.html')) return true;
+  if (isDir && fs.existsSync(path.join(fullPath, 'index.html'))) return true;
+  return false;
+}
+
+// ── route: home & directory listing ──────────────────────
+
+async function renderDirectory(reqPath, isRoot) {
+  let entries;
+  try {
+    entries = fs.readdirSync(reqPath, { withFileTypes: true });
+  } catch {
+    return null;
+  }
+
+  // Attach mtime to each entry
+  for (const e of entries) {
+    e._mtime = getMtime(path.join(reqPath, e.name));
+  }
+
+  const sorted = sortEntries(entries, isRoot);
+  const relDir = path.relative(BASE_DIR, reqPath);
+  const breadcrumbItems = buildBreadcrumb(relDir);
+
+  const items = [];
+  for (const e of sorted) {
+    const fullPath = path.join(reqPath, e.name);
+    const relPath = path.relative(BASE_DIR, fullPath);
+    const isDir = e.isDirectory();
+
+    // Get display info
+    let title, desc;
+    if (isDir) {
+      const info = getFolderInfo(fullPath, e.name);
+      title = info.title;
+      desc = info.desc;
+    } else {
+      const info = getFileInfo(fullPath, e.name);
+      title = info.title;
+      desc = info.desc;
+    }
+
+    // Path display: relative to current directory
+    const pathDisplay = e.name + (isDir ? '/' : '');
+
+    // Run button: .html files or folders with index.html
+    let runBtn = '';
+    if (shouldShowRunBtn(fullPath, e.name, isDir)) {
+      // For html files: open the file directly via static serving
+      // For folders with index.html: open the folder path (which serves index.html)
+      const target = isDir ? `/static-run/${relPath}/` : `/static-run/${relPath}`;
+      runBtn = `<a href="${target}" target="_blank" class="run-game-btn" onclick="event.stopPropagation();">▶</a>`;
+    }
+
+    const href = isDir ? `/${relPath}/` : `/${relPath}`;
+    const cls = isDir ? 'folder' : 'file';
+    items.push(`<div class="item ${cls}" onclick="window.location.href='${href}'" style="cursor:pointer;"><div class="item-path">${pathDisplay}</div><div class="item-title">${escHtml(title)}</div><div class="item-desc">${escHtml(desc)}</div>${runBtn}</div>`);
+  }
+
+  return await ejs.renderFile(path.join(__dirname, 'views', 'layout.ejs'), {
+    title: isRoot ? '🦀 小明的个人网站' : `${path.basename(reqPath)} - 小明的个人网站`,
+    content: items.join(''),
+    breadcrumbItems,
+    showToggle: false
+  });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ── route: markdown rendering ────────────────────────────
+
+async function renderMarkdown(filePath) {
+  const raw = readUtf8(filePath);
+  const html = marked.parse(raw);
+  const relPath = path.relative(BASE_DIR, filePath);
+  const fileName = path.basename(filePath);
+
+  // Breadcrumb: all parts except last are links, last is plain text
+  const parts = relPath.split('/').filter(Boolean);
+  const breadcrumbItems = ['<a href="/">🏠 首页</a>'];
+  let acc = '';
+  for (let i = 0; i < parts.length - 1; i++) {
+    acc += (acc ? '/' : '') + parts[i];
+    breadcrumbItems.push(`<a href="/${acc}/">${parts[i]}</a>`);
+  }
+  breadcrumbItems.push(`<span>${fileName}</span>`);
+
+  const escapedRaw = escHtml(raw);
+
+  return await ejs.renderFile(path.join(__dirname, 'views', 'layout.ejs'), {
+    title: `${fileName} - 小明的个人网站`,
+    content: `<div id="rendered" class="content">${html}</div><pre id="raw" class="raw-view">${escapedRaw}</pre>`,
+    breadcrumbItems,
+    showToggle: true
+  });
+}
+
+// ── routes ───────────────────────────────────────────────
+
+// Home page
 app.get('/', async (req, res) => {
-    const html = await generateIndex(BASE_DIR);
+  try {
+    const html = await renderDirectory(BASE_DIR, true);
+    if (!html) return res.status(500).send('Cannot read workspace');
     res.send(html);
+  } catch (err) {
+    console.error('Home error:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
+// Catch-all for workspace browsing
 app.use(async (req, res) => {
-    let reqPath = path.resolve(BASE_DIR, decodeURIComponent(req.path).replace(/^\//, ''));
+  try {
+    const decoded = decodeURIComponent(req.path).replace(/^\//, '');
+    const reqPath = path.resolve(BASE_DIR, decoded);
 
-    // Security: prevent directory traversal
-    if (!reqPath.startsWith(BASE_DIR)) {
-        return res.status(403).send('Forbidden');
-    }
+    // Security: prevent traversal
+    if (!reqPath.startsWith(BASE_DIR)) return res.status(403).send('Forbidden');
 
-    if (fs.existsSync(reqPath)) {
-        const stat = fs.statSync(reqPath);
-        if (stat.isDirectory()) {
-            const html = await generateIndex(reqPath);
-            res.send(html);
-        } else if (reqPath.endsWith('.md')) {
-            const html = await generatePage(reqPath);
-            res.send(html);
-        } else {
-            // 非 Markdown 文件：用静态文件中间件处理
-            return express.static(BASE_DIR, {
-                index: false,
-                dotfiles: 'ignore',
-                extensions: false
-            })(req, res, () => {});
+    if (!fs.existsSync(reqPath)) {
+      // Try adding trailing slash for directories
+      if (!req.path.endsWith('/') && !path.extname(req.path)) {
+        if (fs.existsSync(reqPath) && safeStat(reqPath)?.isDirectory()) {
+          return res.redirect(req.path + '/');
         }
-    } else {
-        res.status(404).send('Not Found');
+      }
+      return res.status(404).send('Not Found');
     }
+
+    const stat = fs.statSync(reqPath);
+
+    if (stat.isDirectory()) {
+      // Redirect to trailing slash if missing
+      if (!req.path.endsWith('/')) return res.redirect(req.path + '/');
+      const isRoot = reqPath === BASE_DIR;
+      const html = await renderDirectory(reqPath, isRoot);
+      if (!html) return res.status(500).send('Error reading directory');
+      return res.send(html);
+    }
+
+    // File handling
+    if (reqPath.endsWith('.md')) {
+      const html = await renderMarkdown(reqPath);
+      return res.send(html);
+    }
+
+    // All other files: redirect to static-run for proper content-type handling
+    const relToBase = path.relative(BASE_DIR, reqPath);
+    return res.redirect(`/static-run/${relToBase}`);
+  } catch (err) {
+    console.error('Route error:', err);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });

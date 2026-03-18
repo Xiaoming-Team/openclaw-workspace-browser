@@ -1,134 +1,91 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
-    <link rel="stylesheet" href="/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <div class="breadcrumb-nav">
-        <%- breadcrumbItems.join(' <span>›</span> ') %>
-        <% if (showToggle) { %>
-        <button id="toggleBtn" onclick="toggleView()" style="margin-left:auto;padding:4px 12px;background:rgba(255,255,255,0.2);border:none;border-radius:4px;color:white;cursor:pointer;font-size:12px;">📄 原文</button>
-        <% } %>
-    </div>
+  <div class="breadcrumb-nav">
+    <%- breadcrumbItems.join(' <span>›</span> ') %>
+  </div>
 
-    <div class="container">
-        <%- content %>
-    </div>
-
+  <div class="container">
     <% if (showToggle) { %>
-    <script>
-    let showingRendered = true;
-    function toggleView() {
-        const rendered = document.getElementById('rendered');
-        const raw = document.getElementById('raw');
-        const btn = document.getElementById('toggleBtn');
-        if (showingRendered) {
-            rendered.style.display = 'none';
-            raw.style.display = 'block';
-            btn.textContent = '🎨 渲染';
-        } else {
-            rendered.style.display = 'block';
-            raw.style.display = 'none';
-            btn.textContent = '📄 原文';
-        }
-        showingRendered = !showingRendered;
-    }
-    </script>
+    <div class="content-header">
+      <button id="toggleBtn" class="toggle-btn" onclick="toggleView()">📄 原文</button>
+    </div>
     <% } %>
+    <%- content %>
+  </div>
 
-    <script>
-    (function() {
-        var currentModal = null;
-        var currentRotateState = false;
+  <% if (showToggle) { %>
+  <script>
+  let showingRendered = true;
+  function toggleView() {
+    const rendered = document.getElementById('rendered');
+    const raw = document.getElementById('raw');
+    const btn = document.getElementById('toggleBtn');
+    if (showingRendered) {
+      rendered.style.display = 'none';
+      raw.style.display = 'block';
+      btn.textContent = '🎨 渲染';
+    } else {
+      rendered.style.display = 'block';
+      raw.style.display = 'none';
+      btn.textContent = '📄 原文';
+    }
+    showingRendered = !showingRendered;
+  }
+  </script>
+  <% } %>
 
-        // 全屏按钮点击处理（由后端渲染的按钮调用）
-        window.toggleTableFullscreen = function(btn) {
-            var wrapper = btn.closest('.md-table-wrapper');
-            var table = wrapper.querySelector('table');
-            openFullscreen(table);
-        };
+  <script>
+  (function() {
+    var currentModal = null;
 
-        // 打开全屏弹窗
-        function openFullscreen(table) {
-            // 克隆表格
-            var clonedTable = table.cloneNode(true);
-            clonedTable.id = 'fullscreen-table';
+    window.toggleTableFullscreen = function(btn) {
+      var wrapper = btn.closest('.md-table-wrapper');
+      var table = wrapper.querySelector('table');
+      var cloned = table.cloneNode(true);
 
-            // 创建弹窗
-            var overlay = document.createElement('div');
-            overlay.className = 'table-modal-overlay';
+      var overlay = document.createElement('div');
+      overlay.className = 'table-modal-overlay';
 
-            // 创建容器
-            var container = document.createElement('div');
-            container.className = 'table-container';
-            container.appendChild(clonedTable);
+      var controls = document.createElement('div');
+      controls.className = 'table-modal-controls';
 
-            // 创建控制按钮组
-            var controls = document.createElement('div');
-            controls.className = 'table-modal-controls';
+      var exitBtn = document.createElement('button');
+      exitBtn.innerHTML = '✕ 退出';
+      exitBtn.onclick = function(e) { e.stopPropagation(); closeModal(); };
+      controls.appendChild(exitBtn);
 
-            var rotateBtn = document.createElement('button');
-            rotateBtn.innerHTML = '↻ 横屏';
-            rotateBtn.onclick = function(e) {
-                e.stopPropagation();
-                currentRotateState = !currentRotateState;
-                if (currentRotateState) {
-                    overlay.classList.add('rotated');
-                    rotateBtn.innerHTML = '↺ 竖屏';
-                } else {
-                    overlay.classList.remove('rotated');
-                    rotateBtn.innerHTML = '↻ 横屏';
-                }
-            };
+      var container = document.createElement('div');
+      container.className = 'table-container';
+      container.appendChild(cloned);
 
-            var exitBtn = document.createElement('button');
-            exitBtn.innerHTML = '✕ 退出';
-            exitBtn.onclick = function(e) {
-                e.stopPropagation();
-                closeFullscreen();
-            };
+      overlay.appendChild(controls);
+      overlay.appendChild(container);
+      overlay.onclick = function(e) { if (e.target === overlay) closeModal(); };
 
-            controls.appendChild(rotateBtn);
-            controls.appendChild(exitBtn);
+      document.body.appendChild(overlay);
+      document.body.classList.add('table-modal-open');
+      currentModal = overlay;
+    };
 
-            // 组装弹窗
-            overlay.appendChild(controls);
-            overlay.appendChild(container);
+    function closeModal() {
+      if (currentModal) {
+        currentModal.remove();
+        currentModal = null;
+        document.body.classList.remove('table-modal-open');
+      }
+    }
 
-            document.body.appendChild(overlay);
-            currentModal = overlay;
-
-            // 禁止body滚动
-            document.body.classList.add('table-modal-open');
-
-            // 点击遮罩退出
-            overlay.onclick = function(e) {
-                if (e.target === overlay) {
-                    closeFullscreen();
-                }
-            };
-        }
-
-        // 关闭全屏弹窗
-        function closeFullscreen() {
-            if (currentModal) {
-                currentModal.remove();
-                currentModal = null;
-                currentRotateState = false;
-                document.body.classList.remove('table-modal-open');
-            }
-        }
-
-        // ESC退出
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && currentModal) {
-                closeFullscreen();
-            }
-        });
-    })();
-    </script>
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && currentModal) closeModal();
+    });
+  })();
+  </script>
 </body>
 </html>
