@@ -262,6 +262,115 @@ pre code {
 .table-modal-controls button:hover { background: #fff; }
 body.table-modal-open { overflow: hidden !important; }
 
+/* ── File Info Page ── */
+.file-info-card {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  text-align: center;
+}
+.file-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+.file-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 24px;
+  word-break: break-all;
+}
+.file-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+  text-align: left;
+}
+.meta-item {
+  background: #f8f9fa;
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+.meta-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.meta-value {
+  display: block;
+  font-size: 0.95rem;
+  color: #333;
+  font-weight: 500;
+}
+.meta-value.path {
+  font-family: 'SF Mono', Menlo, Monaco, monospace;
+  font-size: 0.85rem;
+  word-break: break-all;
+}
+.file-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+.btn-primary {
+  background: #667eea;
+  color: white;
+}
+.btn-primary:hover {
+  background: #5a6fd6;
+  transform: translateY(-1px);
+}
+.btn-secondary {
+  background: #f0f0f0;
+  color: #555;
+  border: 1px solid #ddd;
+}
+.btn-secondary:hover {
+  background: #e8e8e8;
+}
+
+@media (max-width: 640px) {
+  .file-info-card {
+    padding: 20px;
+  }
+  .file-icon {
+    font-size: 48px;
+  }
+  .file-name {
+    font-size: 1.2rem;
+  }
+  .file-meta {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .file-actions {
+    flex-direction: column;
+  }
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* ── Mobile responsive styles ── */
 @media (max-width: 640px) {
   .breadcrumb-nav {
