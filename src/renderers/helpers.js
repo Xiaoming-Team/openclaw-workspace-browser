@@ -3,8 +3,8 @@ const path = require('path');
 const ejs = require('ejs');
 
 const BASE_DIR = path.resolve(process.env.HOME, '.openclaw', 'workspace');
-const PINNED_FOLDERS = ['Blog', 'Games', 'Research', 'todo', 'src'];
-const SKIP_NAMES = new Set(['node_modules', '__pycache__', '.git']);
+const PINNED_FOLDERS = ['blog', 'games', 'research', 'todo', 'projects'];
+const SKIP_NAMES = new Set(['node_modules', '__pycache__', '.git', '.DS_Store']);
 const LAYOUT_PATH = path.join(__dirname, '..', 'views', 'layout.ejs');
 
 function safeStat(p) {
