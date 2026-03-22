@@ -3,10 +3,16 @@ const fs = require('fs');
 const path = require('path');
 
 const { BASE_DIR, safeStat } = require('./renderers/helpers');
-const { renderDirectory } = require('./renderers/directory');
-const { renderMarkdown } = require('./renderers/markdown');
-const { isTextFile, renderTextFile, MAX_TEXT_SIZE } = require('./renderers/textfile');
-const { renderFileInfo } = require('./renderers/fileinfo');
+
+// Renderer chain: order matters, first match wins. fileinfo is the fallback (always matches).
+const renderers = [
+  require('./renderers/directory'),
+  require('./renderers/markdown'),
+  require('./renderers/textfile'),
+  require('./renderers/image'),
+  require('./renderers/media'),
+  require('./renderers/fileinfo'),
+];
 
 const app = express();
 const PORT = 8888;
@@ -40,7 +46,9 @@ app.get('/download/{*filePath}', (req, res) => {
 // Home page
 app.get('/', async (req, res) => {
   try {
-    const html = await renderDirectory(BASE_DIR, true);
+    const stat = fs.statSync(BASE_DIR);
+    const renderer = renderers.find(r => r.canRender(BASE_DIR, stat));
+    const html = await renderer.render(BASE_DIR, '', stat);
     if (!html) return res.status(500).send('Cannot read workspace');
     res.send(html);
   } catch (err) {
@@ -50,9 +58,6 @@ app.get('/', async (req, res) => {
 });
 
 // Catch-all for workspace browsing
-const IMG_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.ico', '.svg']);
-const MEDIA_EXTS = new Set(['.mp4', '.webm', '.ogg', '.mov', '.mp3', '.wav', '.flac', '.aac', '.m4a', '.pdf']);
-
 app.use(async (req, res) => {
   try {
     const decoded = decodeURIComponent(req.path).replace(/^\//, '');
@@ -71,36 +76,20 @@ app.use(async (req, res) => {
 
     const stat = fs.statSync(reqPath);
 
-    if (stat.isDirectory()) {
-      if (!req.path.endsWith('/')) return res.redirect(req.path + '/');
-      const isRoot = reqPath === BASE_DIR;
-      const html = await renderDirectory(reqPath, isRoot);
-      if (!html) return res.status(500).send('Error reading directory');
-      return res.send(html);
+    if (stat.isDirectory() && !req.path.endsWith('/')) {
+      return res.redirect(req.path + '/');
     }
 
-    // File handling
     const relPath = path.relative(BASE_DIR, reqPath);
-    const ext = path.extname(reqPath).toLowerCase();
+    const renderer = renderers.find(r => r.canRender(reqPath, stat));
 
-    if (ext === '.md') {
-      return res.send(await renderMarkdown(reqPath));
-    }
-
-    if (isTextFile(path.basename(reqPath)) && stat.size <= MAX_TEXT_SIZE * 2) {
-      return res.send(await renderTextFile(reqPath, relPath, stat));
-    }
-
-    if (IMG_EXTS.has(ext)) {
+    if (renderer.sendFile) {
       return res.sendFile(relPath, { root: BASE_DIR });
     }
 
-    if (MEDIA_EXTS.has(ext)) {
-      return res.sendFile(relPath, { root: BASE_DIR });
-    }
-
-    // Binary / unknown files: file info page
-    return res.send(await renderFileInfo(reqPath, relPath, stat));
+    const html = await renderer.render(reqPath, relPath, stat);
+    if (!html) return res.status(500).send('Error rendering');
+    return res.send(html);
   } catch (err) {
     console.error('Route error:', err);
     res.status(500).send('Internal Server Error');

@@ -116,4 +116,10 @@ async function renderDirectory(reqPath, isRoot) {
   });
 }
 
-module.exports = { renderDirectory };
+module.exports = {
+  canRender(reqPath, stat) { return stat.isDirectory(); },
+  render(reqPath, _relPath, _stat) {
+    const isRoot = reqPath === BASE_DIR;
+    return renderDirectory(reqPath, isRoot);
+  },
+};

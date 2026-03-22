@@ -55,4 +55,7 @@ async function renderFileInfo(filePath, relPath, stat) {
   });
 }
 
-module.exports = { renderFileInfo };
+module.exports = {
+  canRender() { return true; },  // fallback: handles anything
+  render: renderFileInfo,
+};

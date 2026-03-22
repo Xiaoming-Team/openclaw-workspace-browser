@@ -30,4 +30,9 @@ async function renderMarkdown(filePath) {
   });
 }
 
-module.exports = { renderMarkdown };
+module.exports = {
+  canRender(reqPath, stat) {
+    return !stat.isDirectory() && path.extname(reqPath).toLowerCase() === '.md';
+  },
+  render: renderMarkdown,
+};

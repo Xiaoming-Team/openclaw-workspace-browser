@@ -109,4 +109,9 @@ async function renderTextFile(filePath, relPath, stat) {
   });
 }
 
-module.exports = { isTextFile, renderTextFile, MAX_TEXT_SIZE };
+module.exports = {
+  canRender(reqPath, stat) {
+    return !stat.isDirectory() && isTextFile(path.basename(reqPath)) && stat.size <= MAX_TEXT_SIZE * 2;
+  },
+  render: renderTextFile,
+};
