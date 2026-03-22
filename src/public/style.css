@@ -446,3 +446,109 @@ body.table-modal-open { overflow: hidden !important; }
     font-size: 12px;
   }
 }
+
+/* ── Text File Viewer ── */
+.text-file-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 12px 16px;
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.text-file-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.text-file-lang {
+  background: #667eea;
+  color: white;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.text-file-size {
+  font-size: 13px;
+  color: #888;
+}
+.text-file-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+}
+.code-viewer {
+  background: #1e293b;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+}
+.code-viewer pre {
+  margin: 0;
+  border-radius: 0;
+  overflow: auto;
+}
+.code-viewer code {
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.truncate-note {
+  background: #fff3cd;
+  color: #856404;
+  padding: 8px 16px;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ── highlight.js theme (GitHub Dark Dimmed) ── */
+.hljs { color: #adbac7; background: #1e293b; }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: #f47067; }
+.hljs-function .hljs-keyword { color: #f47067; }
+.hljs-string, .hljs-attr { color: #96d0ff; }
+.hljs-number, .hljs-literal { color: #6cb6ff; }
+.hljs-title, .hljs-title.function_ { color: #dcbdfb; }
+.hljs-title.class_ { color: #f69d50; }
+.hljs-variable, .hljs-template-variable { color: #f69d50; }
+.hljs-comment, .hljs-quote { color: #768390; font-style: italic; }
+.hljs-doctag { color: #96d0ff; }
+.hljs-meta, .hljs-meta .hljs-keyword { color: #96d0ff; }
+.hljs-type, .hljs-built_in { color: #6cb6ff; }
+.hljs-params { color: #adbac7; }
+.hljs-regexp { color: #96d0ff; }
+.hljs-symbol { color: #6cb6ff; }
+.hljs-addition { color: #57ab5a; background: rgba(87,171,90,0.15); }
+.hljs-deletion { color: #e5534b; background: rgba(229,83,75,0.15); }
+.hljs-selector-class { color: #6cb6ff; }
+.hljs-selector-id { color: #6cb6ff; }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: bold; }
+
+@media (max-width: 640px) {
+  .text-file-header {
+    padding: 10px 12px;
+    border-radius: 8px 8px 0 0;
+  }
+  .text-file-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .btn-sm {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .code-viewer pre {
+    padding: 12px;
+    font-size: 12px;
+  }
+}

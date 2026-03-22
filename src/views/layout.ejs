@@ -87,21 +87,48 @@
     });
   })();
   
-  // Copy path to clipboard
-  window.copyPath = async function(path) {
-    try {
-      await navigator.clipboard.writeText(path);
-      // Show a temporary toast notification
-      const toast = document.createElement('div');
-      toast.textContent = '✓ 路径已复制';
-      toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#28a745;color:white;padding:10px 20px;border-radius:4px;z-index:10000;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 2000);
-    } catch (err) {
-      alert('复制失败，请手动复制');
-      console.error('Copy failed:', err);
+  function copyToClipboard(text, successMsg) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(function() {
+        showToast(successMsg);
+      }).catch(function() {
+        fallbackCopy(text, successMsg);
+      });
+    } else {
+      fallbackCopy(text, successMsg);
     }
+  }
+
+  function fallbackCopy(text, successMsg) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      showToast(successMsg);
+    } catch (e) {
+      alert('复制失败，请手动复制: ' + text);
+    }
+    document.body.removeChild(ta);
+  }
+
+  window.copyPath = function(path) {
+    copyToClipboard(path, '✓ 路径已复制');
   };
+
+  window.copyFileName = function(name) {
+    copyToClipboard(name, '✓ 文件名已复制');
+  };
+
+  function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.textContent = msg;
+    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#28a745;color:white;padding:10px 20px;border-radius:4px;z-index:10000;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  }
   </script>
 </body>
 </html>
