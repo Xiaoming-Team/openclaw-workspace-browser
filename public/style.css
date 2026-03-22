@@ -1,18 +1,23 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: #f5f5f5;
   color: #333;
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ── Breadcrumb ── */
 .breadcrumb-nav {
   position: fixed; top: 0; left: 0; right: 0;
   background: linear-gradient(135deg, #667eea, #764ba2);
-  padding: 10px 16px;
-  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  display: flex; align-items: center; gap: 6px;
   z-index: 100;
   overflow-x: auto;
   white-space: nowrap;
@@ -27,7 +32,7 @@ body {
 .breadcrumb-nav span { color: rgba(255,255,255,0.6); font-size: 12px; flex-shrink: 0; }
 
 /* ── Container ── */
-.container { max-width: 900px; margin: 0 auto; padding: 52px 16px 24px; }
+.container { max-width: 900px; margin: 0 auto; padding: 50px 12px 24px; }
 
 /* ── Item cards ── */
 .item {
@@ -153,7 +158,8 @@ pre code {
   margin-bottom: 12px;
 }
 .toggle-btn {
-  padding: 4px 12px;
+  padding: 6px 12px;
+  min-height: 32px;
   background: rgba(0,0,0,0.06);
   border: 1px solid rgba(0,0,0,0.12);
   border-radius: 4px;
@@ -163,6 +169,14 @@ pre code {
   transition: background 0.15s;
 }
 .toggle-btn:hover { background: rgba(0,0,0,0.1); }
+
+@media (max-width: 640px) {
+  .toggle-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+    min-height: 36px;
+  }
+}
 
 /* ── Tables ── */
 .md-table-wrapper {
@@ -200,15 +214,25 @@ pre code {
 
 .table-fullscreen-btn {
   position: absolute; top: 4px; right: 4px; z-index: 10;
-  padding: 2px 6px;
+  padding: 4px 8px;
+  min-height: 24px;
+  min-width: 44px;
   background: rgba(255,255,255,0.9);
   border: 1px solid rgba(0,0,0,0.15);
   border-radius: 4px;
   color: #333; font-size: 11px;
-  cursor: pointer; opacity: 0.6;
+  cursor: pointer; opacity: 0.8;
   transition: opacity 0.2s;
 }
 .table-fullscreen-btn:hover { opacity: 1; }
+
+@media (max-width: 640px) {
+  .table-fullscreen-btn {
+    padding: 6px 8px;
+    font-size: 12px;
+    min-height: 28px;
+  }
+}
 
 /* ── Table fullscreen modal ── */
 .table-modal-overlay {
@@ -237,3 +261,79 @@ pre code {
 }
 .table-modal-controls button:hover { background: #fff; }
 body.table-modal-open { overflow: hidden !important; }
+
+/* ── Mobile responsive styles ── */
+@media (max-width: 640px) {
+  .breadcrumb-nav {
+    padding: 6px 10px;
+  }
+  .breadcrumb-nav a {
+    font-size: 12px;
+  }
+  .container {
+    padding: 44px 8px 16px;
+  }
+  .item {
+    padding: 12px 14px;
+    padding-right: 50px;
+    margin-bottom: 6px;
+  }
+  .item-title {
+    font-size: 16px;
+  }
+  .content {
+    padding: 16px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+  .content h1 {
+    font-size: 1.5em;
+    margin: 16px 0 10px;
+  }
+  .content h2 {
+    font-size: 1.3em;
+  }
+  .content h3 {
+    font-size: 1.1em;
+  }
+  .md-table-wrapper {
+    margin: 12px 0;
+  }
+  .md-table {
+    font-size: 12px;
+  }
+  .md-table th,
+  .md-table td {
+    padding: 6px 6px;
+  }
+  pre {
+    padding: 12px;
+    font-size: 12px;
+  }
+  .run-game-btn {
+    width: 28px;
+    height: 28px;
+    right: 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 12px;
+    font-size: 14px;
+  }
+  .item {
+    padding: 10px 12px;
+    padding-right: 46px;
+  }
+  .item-path {
+    font-size: 10px;
+  }
+  .item-title {
+    font-size: 15px;
+  }
+  .item-desc {
+    font-size: 12px;
+  }
+}

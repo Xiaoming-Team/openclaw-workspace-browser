@@ -4,10 +4,31 @@ const path = require('path');
 const { marked } = require('marked');
 const ejs = require('ejs');
 
+// Load env
+const browserUser = process.env.BROWSER_USER || 'jerry';
+const browserPass = process.env.BROWSER_PASS || '6DRCTzIWeacVF5';
+
+// Basic Auth middleware
+function authMiddleware(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Basic ')) {
+    res.setHeader('WWW-Authenticate', 'Basic realm="Workspace Browser"');
+    res.status(401).send('Unauthorized');
+    return;
+  }
+  const [username, password] = Buffer.from(authHeader.slice(6), 'base64').toString().split(':');
+  if (username === browserUser && password === browserPass) {
+    next();
+  } else {
+    res.setHeader('WWW-Authenticate', 'Basic realm="Workspace Browser"');
+    res.status(401).send('Unauthorized');
+  }
+}
+
 const app = express();
 const PORT = 8888;
 const BASE_DIR = path.resolve(process.env.HOME, '.openclaw', 'workspace');
-const PINNED_FOLDERS = ['Blog', 'Games', 'Research'];
+const PINNED_FOLDERS = ['Blog', 'Games', 'Research','todo','src'];
 const SKIP_NAMES = new Set(['node_modules', '__pycache__', '.git']);
 
 // Configure marked
@@ -29,6 +50,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Static server for running HTML files (games, etc.)
 app.use('/static-run', express.static(BASE_DIR));
+
+// Auth disabled — proxy-server handles auth above this layer
+// app.use(authMiddleware);
 
 // ── helpers ──────────────────────────────────────────────
 
@@ -302,8 +326,14 @@ app.use(async (req, res) => {
     }
 
     // All other files: redirect to static-run for proper content-type handling
-    const relToBase = path.relative(BASE_DIR, reqPath);
-    return res.redirect(`/static-run/${relToBase}`);
+    // const relToBase = path.relative(BASE_DIR, reqPath);
+    // return res.redirect(`/static-run/${relToBase}`);
+    // 非 Markdown 文件：用静态文件中间件处理
+    return express.static(BASE_DIR, {
+        index: false,
+        dotfiles: 'ignore',
+        extensions: false
+    })(req, res, () => {});
   } catch (err) {
     console.error('Route error:', err);
     res.status(500).send('Internal Server Error');
