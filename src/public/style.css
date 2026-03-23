@@ -348,6 +348,7 @@ body.table-modal-open { overflow: hidden !important; }
   background: #e8e8e8;
 }
 
+/* ── Mobile responsive styles ── */
 @media (max-width: 640px) {
   .file-info-card {
     padding: 20px;
@@ -369,10 +370,6 @@ body.table-modal-open { overflow: hidden !important; }
     width: 100%;
     justify-content: center;
   }
-}
-
-/* ── Mobile responsive styles ── */
-@media (max-width: 640px) {
   .breadcrumb-nav {
     padding: 6px 10px;
   }
@@ -487,22 +484,6 @@ body.table-modal-open { overflow: hidden !important; }
   font-size: 13px;
   border-radius: 6px;
 }
-.code-viewer {
-  background: #1e293b;
-  border-radius: 0 0 10px 10px;
-  overflow: hidden;
-}
-.code-viewer pre {
-  margin: 0;
-  border-radius: 0;
-  overflow: auto;
-}
-.code-viewer code {
-  background: none;
-  padding: 0;
-  font-size: 13px;
-  line-height: 1.6;
-}
 .truncate-note {
   background: #fff3cd;
   color: #856404;
@@ -545,10 +526,6 @@ body.table-modal-open { overflow: hidden !important; }
   }
   .btn-sm {
     padding: 6px 10px;
-    font-size: 12px;
-  }
-  .code-viewer pre {
-    padding: 12px;
     font-size: 12px;
   }
 }

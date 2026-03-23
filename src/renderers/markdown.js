@@ -1,9 +1,27 @@
 const path = require('path');
 const { marked } = require('marked');
+const hljs = require('highlight.js');
 const { readUtf8, escHtml, buildFileBreadcrumb, renderLayout, BASE_DIR } = require('./helpers');
 
-// Configure marked
-marked.setOptions({ gfm: true, breaks: true });
+// Configure marked with syntax highlighting
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+  highlight: function(code, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(code, { language: lang }).value;
+      } catch (e) {
+        // fallback to auto
+      }
+    }
+    try {
+      return hljs.highlightAuto(code).value;
+    } catch (e) {
+      return escHtml(code);
+    }
+  }
+});
 
 const origParse = marked.parse.bind(marked);
 marked.parse = function (content) {
