@@ -98,7 +98,7 @@ async function renderTextFile(filePath, relPath, stat) {
         </div>
         <div class="text-file-actions">
           <button class="btn btn-secondary btn-sm" onclick="copyFileName('${safeFileName}')">📋 复制文件名</button>
-          <a href="/download/${encodeURI(relPath)}" class="btn btn-primary btn-sm" download>⬇️ 下载</a>
+          <a href="/__download/${encodeURI(relPath)}" class="btn btn-primary btn-sm" download>⬇️ 下载</a>
         </div>
       </div>
       ${truncNote}

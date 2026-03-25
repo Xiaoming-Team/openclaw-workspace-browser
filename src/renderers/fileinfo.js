@@ -45,7 +45,7 @@ async function renderFileInfo(filePath, relPath, stat) {
           </div>
         </div>
         <div class="file-actions">
-          <a href="/download/${encodeURI(relPath)}" class="btn btn-primary" download>⬇️ 下载文件</a>
+          <a href="/__download/${encodeURI(relPath)}" class="btn btn-primary" download>⬇️ 下载文件</a>
           <button class="btn btn-secondary" onclick="copyPath('${safeRelPath}')">📋 复制路径</button>
         </div>
       </div>

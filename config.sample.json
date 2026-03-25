@@ -1,0 +1,20 @@
+{
+  "port": 8888,
+  "auth": {
+    "user": "your_username",
+    "pass": "your_password"
+  },
+  "baseDir": "~/.openclaw/workspace",
+  "pinnedFolders": [
+    "blog",
+    "games",
+    "research",
+    "todo",
+    "projects"
+  ],
+  "skipNames": [
+    "node_modules",
+    "__pycache__",
+    ".DS_Store"
+  ]
+}

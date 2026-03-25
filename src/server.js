@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const config = require('./config');
 
 const { BASE_DIR, safeStat } = require('./renderers/helpers');
 
@@ -15,17 +16,43 @@ const renderers = [
 ];
 
 const app = express();
-const PORT = 8888;
+const PORT = config.port || 8888;
+
+// Basic auth middleware
+if (config.auth && config.auth.user && config.auth.pass) {
+  const basicAuth = (req, res, next) => {
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      res.setHeader('WWW-Authenticate', 'Basic realm="Workspace Browser"');
+      return res.status(401).send('Authentication required');
+    }
+
+    const encoded = authHeader.split(' ')[1];
+    const decoded = Buffer.from(encoded, 'base64').toString('utf-8');
+    const [user, pass] = decoded.split(':');
+
+    if (user === config.auth.user && pass === config.auth.pass) {
+      next();
+    } else {
+      res.setHeader('WWW-Authenticate', 'Basic realm="Workspace Browser"');
+      res.status(401).send('Invalid credentials');
+    }
+  };
+
+  // Apply auth to all routes
+  app.use(basicAuth);
+}
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Static server for running HTML files (games, etc.)
-app.use('/static-run', express.static(BASE_DIR));
+app.use('/__run', express.static(BASE_DIR));
 
 // Download endpoint
-app.get('/download/{*filePath}', (req, res) => {
+app.get('/__download/{*filePath}', (req, res) => {
   const parts = Array.isArray(req.params.filePath) ? req.params.filePath : [req.params.filePath];
   const decoded = decodeURIComponent(parts.join('/'));
   const filePath = path.resolve(BASE_DIR, decoded);

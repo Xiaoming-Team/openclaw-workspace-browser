@@ -1,10 +1,18 @@
 const fs = require('fs');
 const path = require('path');
 const ejs = require('ejs');
+const config = require('../config');
 
-const BASE_DIR = path.resolve(process.env.HOME, '.openclaw', 'workspace');
-const PINNED_FOLDERS = ['blog', 'games', 'research', 'todo', 'projects'];
-const SKIP_NAMES = new Set(['node_modules', '__pycache__', '.git', '.DS_Store']);
+// 展开 baseDir 中的 ~
+let baseDir = config.baseDir || '~/.openclaw/workspace';
+baseDir = baseDir.replace(/^~/, process.env.HOME);
+if (!path.isAbsolute(baseDir)) {
+  baseDir = path.resolve(process.cwd(), baseDir);
+}
+
+const BASE_DIR = baseDir;
+const PINNED_FOLDERS = config.pinnedFolders || [];
+const SKIP_NAMES = new Set(config.skipNames || []);
 const LAYOUT_PATH = path.join(__dirname, '..', 'views', 'layout.ejs');
 
 function safeStat(p) {

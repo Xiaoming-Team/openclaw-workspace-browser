@@ -99,7 +99,7 @@ async function renderDirectory(reqPath, isRoot) {
 
     let runBtn = '';
     if (shouldShowRunBtn(fullPath, e.name, isDir)) {
-      const target = isDir ? `/static-run/${relPath}/` : `/static-run/${relPath}`;
+      const target = isDir ? `/__run/${relPath}/` : `/__run/${relPath}`;
       runBtn = `<a href="${target}" target="_blank" class="run-game-btn" onclick="event.stopPropagation();">▶</a>`;
     }
 
