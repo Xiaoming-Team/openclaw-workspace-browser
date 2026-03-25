@@ -16,5 +16,11 @@
     "node_modules",
     "__pycache__",
     ".DS_Store"
-  ]
+  ],
+  "site": {
+    "title": "个人网站",
+    "homeEmoji": "🏠",
+    "homeText": "首页",
+    "rootTitlePrefix": "🦀 "
+  }
 }

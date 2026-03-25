@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const {
-  BASE_DIR, PINNED_FOLDERS, SKIP_NAMES,
+  BASE_DIR, PINNED_FOLDERS, SKIP_NAMES, SITE_CONFIG,
   safeStat, readUtf8, escHtml, extractMdInfo,
   buildBreadcrumb, renderLayout,
 } = require('./helpers');
@@ -108,8 +108,12 @@ async function renderDirectory(reqPath, isRoot) {
     items.push(`<div class="item ${cls}" onclick="window.location.href='${href}'" style="cursor:pointer;"><div class="item-path">${pathDisplay}</div><div class="item-title">${escHtml(title)}</div><div class="item-desc">${escHtml(desc)}</div>${runBtn}</div>`);
   }
 
+  const title = isRoot
+    ? `${SITE_CONFIG.rootTitlePrefix}${SITE_CONFIG.title}`
+    : `${path.basename(reqPath)} - ${SITE_CONFIG.title}`;
+
   return await renderLayout({
-    title: isRoot ? '🦀 小明的个人网站' : `${path.basename(reqPath)} - 小明的个人网站`,
+    title,
     content: items.join(''),
     breadcrumbItems,
     showToggle: false,

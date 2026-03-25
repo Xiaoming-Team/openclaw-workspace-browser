@@ -15,6 +15,14 @@ const PINNED_FOLDERS = config.pinnedFolders || [];
 const SKIP_NAMES = new Set(config.skipNames || []);
 const LAYOUT_PATH = path.join(__dirname, '..', 'views', 'layout.ejs');
 
+// Site configuration
+const SITE_CONFIG = {
+  title: config.site?.title || '个人网站',
+  homeEmoji: config.site?.homeEmoji || '🏠',
+  homeText: config.site?.homeText || '首页',
+  rootTitlePrefix: config.site?.rootTitlePrefix || '',
+};
+
 function safeStat(p) {
   try { return fs.statSync(p); } catch { return null; }
 }
@@ -64,7 +72,7 @@ function extractMdInfo(text) {
 
 function buildFileBreadcrumb(relPath) {
   const parts = relPath.split('/').filter(Boolean);
-  const items = ['<a href="/">🏠 首页</a>'];
+  const items = [`<a href="/">${SITE_CONFIG.homeEmoji} ${SITE_CONFIG.homeText}</a>`];
   let acc = '';
   for (let i = 0; i < parts.length - 1; i++) {
     acc += (acc ? '/' : '') + parts[i];
@@ -75,7 +83,7 @@ function buildFileBreadcrumb(relPath) {
 }
 
 function buildBreadcrumb(relPath) {
-  const items = ['<a href="/">🏠 首页</a>'];
+  const items = [`<a href="/">${SITE_CONFIG.homeEmoji} ${SITE_CONFIG.homeText}</a>`];
   if (!relPath) return items;
   const parts = relPath.split('/').filter(Boolean);
   let acc = '';
@@ -91,7 +99,7 @@ async function renderLayout(opts) {
 }
 
 module.exports = {
-  BASE_DIR, PINNED_FOLDERS, SKIP_NAMES,
+  BASE_DIR, PINNED_FOLDERS, SKIP_NAMES, SITE_CONFIG,
   safeStat, readUtf8, escHtml, formatFileSize,
   extractMdInfo, buildFileBreadcrumb, buildBreadcrumb,
   renderLayout,

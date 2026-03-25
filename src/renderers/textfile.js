@@ -1,6 +1,6 @@
 const path = require('path');
 const hljs = require('highlight.js');
-const { readUtf8, escHtml, formatFileSize, buildFileBreadcrumb, renderLayout } = require('./helpers');
+const { readUtf8, escHtml, formatFileSize, buildFileBreadcrumb, renderLayout, SITE_CONFIG } = require('./helpers');
 
 const TEXT_EXTENSIONS = new Set([
   '.js', '.mjs', '.cjs', '.ts', '.tsx', '.jsx',
@@ -89,7 +89,7 @@ async function renderTextFile(filePath, relPath, stat) {
   const safeFileName = escHtml(fileName);
 
   return await renderLayout({
-    title: `${fileName} - 小明的个人网站`,
+    title: `${fileName} - ${SITE_CONFIG.title}`,
     content: `
       <div class="text-file-header">
         <div class="text-file-info">

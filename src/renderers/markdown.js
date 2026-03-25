@@ -1,7 +1,7 @@
 const path = require('path');
 const { marked } = require('marked');
 const hljs = require('highlight.js');
-const { readUtf8, escHtml, buildFileBreadcrumb, renderLayout, BASE_DIR } = require('./helpers');
+const { readUtf8, escHtml, buildFileBreadcrumb, renderLayout, BASE_DIR, SITE_CONFIG } = require('./helpers');
 
 // Configure marked with syntax highlighting
 marked.setOptions({
@@ -41,7 +41,7 @@ async function renderMarkdown(filePath) {
   const escapedRaw = escHtml(raw);
 
   return await renderLayout({
-    title: `${fileName} - 小明的个人网站`,
+    title: `${fileName} - ${SITE_CONFIG.title}`,
     content: `<div id="rendered" class="content">${html}</div><pre id="raw" class="raw-view">${escapedRaw}</pre>`,
     breadcrumbItems,
     showToggle: true,
