@@ -1,6 +1,8 @@
-# 🌐 Workspace Browser
+# 🌐 OpenClaw Workspace Browser
 
-一个轻量级的个人工作空间文件浏览器，提供 Web 界面浏览本地文件系统。支持 Markdown 渲染、HTML 直接运行、图片预览等功能。
+**简体中文** | [English](README.en.md)
+
+一个为 OpenClaw 设计的轻量级个人工作空间文件浏览器，提供 Web 界面浏览本地文件系统。支持 Markdown 渲染、HTML 直接运行、图片预览等功能。
 
 ## 功能特点
 
@@ -78,16 +80,16 @@ npm start
 
 ```bash
 # 启动
-pm2 start src/server.js --name workspace-browser
+pm2 start src/server.js --name openclaw-workspace-browser
 
 # 停止
-pm2 stop workspace-browser
+pm2 stop openclaw-workspace-browser
 
 # 重启
-pm2 restart workspace-browser
+pm2 restart openclaw-workspace-browser
 
 # 查看日志
-pm2 logs workspace-browser
+pm2 logs openclaw-workspace-browser
 
 # 开机自启
 pm2 startup

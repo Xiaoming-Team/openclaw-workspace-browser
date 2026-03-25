@@ -1,7 +1,7 @@
-# Workspace 文件浏览器 - 需求文档
+# OpenClaw Workspace 文件浏览器 - 需求文档
 
 ## 概述
-一个基于 Express 的文件浏览网站，可以逐级浏览指定目录下的所有文件和文件夹。
+一个为 OpenClaw 设计的基于 Express 的文件浏览网站，可以逐级浏览指定目录下的所有文件和文件夹。
 
 **配置项（config.json）：**
 - 端口（默认 8888）
@@ -78,6 +78,6 @@
 
 ## 技术栈
 - Express + EJS + marked + highlight.js
-- PM2 管理，服务名 workspace-browser
+- PM2 管理，服务名 openclaw-workspace-browser
 - 绑定地址：0.0.0.0
 - 端口：配置（默认 8888）
