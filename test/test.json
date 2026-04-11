@@ -1,0 +1,121 @@
+{
+  "metadata": {
+    "file_version": "1.0.0",
+    "created_at": "2026-03-23T10:15:30Z",
+    "generator": "manual",
+    "is_test_data": true,
+    "description": "A comprehensive JSON test file with various data types and nested structures"
+  },
+  "user_info": {
+    "user_id": 10086,
+    "username": "test_user_001",
+    "full_name": "张三",
+    "email": "zhangsan@example.com",
+    "phone": "+8613812345678",
+    "age": 28,
+    "is_verified": true,
+    "membership_level": "gold",
+    "registration_date": "2025-01-15",
+    "last_login": "2026-03-22T18:45:12Z",
+    "address": {
+      "province": "广东省",
+      "city": "深圳市",
+      "district": "南山区",
+      "detail": "科技园路100号腾讯大厦15层",
+      "zip_code": 518057,
+      "latitude": 22.54286,
+      "longitude": 113.94129,
+      "is_default": true
+    },
+    "hobbies": ["编程", "阅读", "跑步", "摄影"],
+    "preferences": {
+      "language": "zh-CN",
+      "theme": "dark",
+      "notifications": {
+        "email": true,
+        "sms": false,
+        "push": true
+      },
+      "favorite_categories": [101, 205, 308]
+    },
+    "emergency_contact": null,
+    "account_balance": 1258.99,
+    "points": 8975
+  },
+  "recent_orders": [
+    {
+      "order_id": "ORD20260320001",
+      "order_time": "2026-03-20T09:30:45Z",
+      "total_amount": 599.99,
+      "status": "completed",
+      "payment_method": "wechat_pay",
+      "items": [
+        {
+          "product_id": "PROD001",
+          "product_name": "Python编程实战",
+          "category": "books",
+          "price": 89.99,
+          "quantity": 2,
+          "subtotal": 179.98,
+          "attributes": {
+            "binding": "paperback",
+            "language": "Chinese",
+            "pages": 450
+          }
+        },
+        {
+          "product_id": "PROD002",
+          "product_name": "机械键盘",
+          "category": "electronics",
+          "price": 419.99,
+          "quantity": 1,
+          "subtotal": 419.99,
+          "attributes": {
+            "switch_type": "red",
+            "layout": "104-key",
+            "color": "black"
+          }
+        }
+      ],
+      "shipping_fee": 0.0,
+      "discount_amount": 9.98
+    },
+    {
+      "order_id": "ORD20260315002",
+      "order_time": "2026-03-15T14:20:10Z",
+      "total_amount": 129.99,
+      "status": "shipped",
+      "payment_method": "alipay",
+      "items": [
+        {
+          "product_id": "PROD003",
+          "product_name": "运动水杯",
+          "category": "daily",
+          "price": 59.99,
+          "quantity": 2,
+          "subtotal": 119.98,
+          "attributes": {
+            "capacity": "500ml",
+            "material": "stainless_steel",
+            "color": "blue"
+          }
+        }
+      ],
+      "shipping_fee": 10.01,
+      "discount_amount": 0.0
+    }
+  ],
+  "empty_fields": {
+    "empty_string": "",
+    "empty_array": [],
+    "empty_object": {},
+    "null_value": null
+  },
+  "numeric_variations": {
+    "integer": 12345,
+    "negative_integer": -9876,
+    "float": 3.1415926,
+    "scientific_notation": 1.23e5,
+    "zero": 0
+  }
+}
