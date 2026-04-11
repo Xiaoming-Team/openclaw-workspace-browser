@@ -28,7 +28,7 @@ function getMtime(fullPath) {
   return st ? st.mtimeMs : 0;
 }
 
-function sortEntries(entries, isRoot) {
+function sortEntries(entries, isRoot, currentRelPath = '') {
   const pinned = [], normalDirs = [], hiddenDirs = [], normalFiles = [], hiddenFiles = [];
 
   for (const e of entries) {
@@ -36,9 +36,15 @@ function sortEntries(entries, isRoot) {
     const isHidden = e.name.startsWith('.');
     const isDir = e.isDirectory();
 
-    if (isRoot && isDir) {
-      const pinnedIdx = PINNED_FOLDERS.findIndex(p => p.toLowerCase() === e.name.toLowerCase());
-      if (pinnedIdx >= 0) { e._pinnedIdx = pinnedIdx; pinned.push(e); continue; }
+    // Build full relative path for this entry
+    const itemRelPath = currentRelPath ? `${currentRelPath}/${e.name}` : e.name;
+
+    // Check if this entry is in the pinned list (supports both directories and files)
+    const pinnedIdx = PINNED_FOLDERS.findIndex(p => p.toLowerCase() === itemRelPath.toLowerCase());
+    if (pinnedIdx >= 0) {
+      e._pinnedIdx = pinnedIdx;
+      pinned.push(e);
+      continue;
     }
 
     if (isDir) {
@@ -76,8 +82,8 @@ async function renderDirectory(reqPath, isRoot) {
     e._mtime = getMtime(path.join(reqPath, e.name));
   }
 
-  const sorted = sortEntries(entries, isRoot);
   const relDir = path.relative(BASE_DIR, reqPath);
+  const sorted = sortEntries(entries, isRoot, relDir);
   const breadcrumbItems = buildBreadcrumb(relDir);
 
   const items = [];
