@@ -1,34 +1,34 @@
 # 🌐 OpenClaw Workspace Browser
 
-**简体中文** | [English](README.en.md)
+**English** | [简体中文](README.zh-CN.md)
 
-一个为 OpenClaw 设计的轻量级个人工作空间文件浏览器，提供 Web 界面浏览本地文件系统。支持 Markdown 渲染、HTML 直接运行、图片预览等功能。
+A lightweight web-based file browser designed for OpenClaw workspace, providing a web interface to browse local file systems. Features Markdown rendering, direct HTML execution, image previewing, and more.
 
-## 功能特点
+## Features
 
-- 📂 **浏览文件系统** - 安全地浏览指定目录下的所有文件和文件夹
-- 📝 **Markdown 渲染** - 自动渲染 Markdown 文件，支持高亮和代码块
-- 🎮 **HTML 运行** - HTML 文件可直接在浏览器中运行（适合小游戏、演示等）
-- 🖼️ **图片预览** - 内嵌图片预览，无需下载
-- 📱 **移动端友好** - 响应式设计，面包屑导航支持滑动
-- 🔒 **基础认证** - 支持 HTTP Basic Auth 保护访问
-- ⚡ **轻量快速** - 纯 Node.js 实现，无需数据库
+- 📂 **File System Browsing** - Securely browse all files and folders within a specified directory
+- 📝 **Markdown Rendering** - Automatically render Markdown files with syntax highlighting and code blocks
+- 🎮 **HTML Execution** - Run HTML files directly in the browser (great for games and demos)
+- 🖼️ **Image Preview** - Inline image preview without downloading
+- 📱 **Mobile Friendly** - Responsive design with scrollable breadcrumb navigation
+- 🔒 **Basic Authentication** - HTTP Basic Auth protection support
+- ⚡ **Lightweight & Fast** - Pure Node.js implementation, no database required
 
-## 安装
+## Installation
 
 ```bash
 npm install
 ```
 
-## 配置
+## Configuration
 
-1. 复制示例配置文件：
+1. Copy the sample configuration file:
 
 ```bash
 cp config.sample.json config.json
 ```
 
-2. 编辑 `config.json`：
+2. Edit `config.json`:
 
 ```json
 {
@@ -56,81 +56,81 @@ cp config.sample.json config.json
 }
 ```
 
-**配置说明：**
+**Configuration Options:**
 
-- `port` - 服务端口号
-- `auth` - HTTP Basic Auth 认证（留空则无需认证）
-- `baseDir` - 要浏览的基础目录（支持 `~` 展开为用户主目录）
-- `pinnedFolders` - 首页显示的固定文件夹
-- `skipNames` - 浏览时隐藏的文件/文件夹名称
+- `port` - Server port number
+- `auth` - HTTP Basic Auth authentication (leave empty to disable authentication)
+- `baseDir` - Base directory to browse (supports `~` expansion to home directory)
+- `pinnedFolders` - Folders to pin at the top of the homepage
+- `skipNames` - File/folder names to hide during browsing
 
-## 运行
+## Running
 
-直接运行：
+Run directly:
 
 ```bash
 npm start
 ```
 
-访问 `http://localhost:8888`
+Visit `http://localhost:8888`
 
-## PM2 管理
+## PM2 Management
 
-使用 PM2 守护进程运行：
+Run with PM2 daemon:
 
 ```bash
-# 启动
+# Start
 pm2 start src/server.js --name openclaw-workspace-browser
 
-# 停止
+# Stop
 pm2 stop openclaw-workspace-browser
 
-# 重启
+# Restart
 pm2 restart openclaw-workspace-browser
 
-# 查看日志
+# View logs
 pm2 logs openclaw-workspace-browser
 
-# 开机自启
+# Auto-start on system boot
 pm2 startup
 pm2 save
 ```
 
-## 使用示例
+## Usage Examples
 
-### 浏览文件
+### Browsing Files
 
-访问首页，查看所有固定文件夹，点击进入即可浏览。
+Visit the homepage to see all pinned folders. Click to navigate into directories.
 
-### 查看 Markdown
+### Viewing Markdown
 
-Markdown 文件会自动渲染，支持：
-- 标题、列表、代码块
-- 表格（支持全屏查看）
-- 链接、图片
+Markdown files are automatically rendered with support for:
+- Headings, lists, and code blocks
+- Tables (with fullscreen view)
+- Links and images
 
-### 运行 HTML/JS 小游戏
+### Running HTML/JS Games
 
-将 HTML 文件放在 `games/` 目录下，访问时可直接在浏览器中运行。
+Place HTML files in the `games/` directory and run them directly in your browser.
 
-### 下载文件
+### Downloading Files
 
-点击文件详情页的"下载"按钮，或使用 `/__download/路径` 端点直接下载。
+Click the "Download" button on the file details page, or use the `/__download/path` endpoint to download directly.
 
-## 技术栈
+## Tech Stack
 
-- **Node.js** - 运行时
-- **Express** - Web 框架
-- **EJS** - 模板引擎
-- **marked** - Markdown 解析
-- **highlight.js** - 代码高亮
+- **Node.js** - Runtime
+- **Express** - Web framework
+- **EJS** - Template engine
+- **marked** - Markdown parser
+- **highlight.js** - Code syntax highlighting
 
-## 安全
+## Security
 
-- 路径遍历防护（禁止访问 `baseDir` 外的文件）
-- 基础认证保护（可选）
-- 仅浏览文件系统，不提供写操作
+- Path traversal protection (prevents accessing files outside `baseDir`)
+- Basic authentication protection (optional)
+- Read-only file system access (no write operations)
 
-## 许可
+## License
 
 MIT License

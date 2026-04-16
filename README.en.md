@@ -1,6 +1,6 @@
 # 🌐 OpenClaw Workspace Browser
 
-[简体中文](README.md) | **English**
+[简体中文](README.zh-CN.md) | **English**
 
 A lightweight web-based file browser designed for OpenClaw workspace, providing a web interface to browse local file systems. Features Markdown rendering, direct HTML execution, image previewing, and more.
 
