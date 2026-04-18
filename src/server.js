@@ -9,8 +9,8 @@ const { BASE_DIR, safeStat } = require('./renderers/helpers');
 const renderers = [
   require('./renderers/directory'),
   require('./renderers/markdown'),
-  require('./renderers/textfile'),
   require('./renderers/image'),
+  require('./renderers/textfile'),
   require('./renderers/media'),
   require('./renderers/fileinfo'),
 ];

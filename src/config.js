@@ -25,6 +25,13 @@ function loadConfig() {
     config = defaultConfig;
   }
 
+  if (process.env.WORKSPACE_BROWSER_PORT) {
+    config.port = Number(process.env.WORKSPACE_BROWSER_PORT) || config.port;
+  }
+  if (process.env.WORKSPACE_BROWSER_BASE_DIR) {
+    config.baseDir = process.env.WORKSPACE_BROWSER_BASE_DIR;
+  }
+
   // 展开 baseDir 中的 ~
   if (config.baseDir) {
     config.baseDir = config.baseDir.replace(/^~/, process.env.HOME);
