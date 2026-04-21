@@ -4,6 +4,10 @@
 
 A lightweight web-based file browser designed for OpenClaw workspace, providing a web interface to browse local file systems. Features Markdown rendering, direct HTML execution, image previewing, and more.
 
+## Preview
+
+![Mobile-width Markdown preview](assets/readme-mobile-preview.jpg)
+
 ## Features
 
 - 📂 **File System Browsing** - Securely browse all files and folders within a specified directory

@@ -4,6 +4,10 @@
 
 一个为 OpenClaw 设计的轻量级个人工作空间文件浏览器，提供 Web 界面浏览本地文件系统。支持 Markdown 渲染、HTML 直接运行、图片预览等功能。
 
+## 预览
+
+![手机宽度 Markdown 预览图](assets/readme-mobile-preview.jpg)
+
 ## 功能特点
 
 - 📂 **浏览文件系统** - 安全地浏览指定目录下的所有文件和文件夹

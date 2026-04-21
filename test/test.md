@@ -1,3 +1,10 @@
+---
+title: 丰富格式测试文档
+description: 用一份内容更完整的 Markdown 样例验证 Front Matter、目录、表格、代码块和长文排版效果
+status: demo
+tags: markdown, frontmatter, tables, code
+---
+
 # 🧪 丰富格式测试文档
 
 > 这是一个用于测试 Markdown 渲染效果的文档，包含了各种常见的 Markdown 格式元素。
