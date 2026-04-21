@@ -7,7 +7,7 @@
 ## 功能特点
 
 - 📂 **浏览文件系统** - 安全地浏览指定目录下的所有文件和文件夹
-- 📝 **Markdown 渲染** - 自动渲染 Markdown 文件，支持高亮和代码块
+- 📝 **Markdown 渲染** - 自动渲染 Markdown 文件，支持高亮、代码块和紧凑的 Front Matter 元信息标签
 - 🎮 **HTML 运行** - HTML 文件可直接在浏览器中运行（适合小游戏、演示等）
 - 🖼️ **图片预览** - 内嵌图片预览，无需下载
 - 📱 **移动端友好** - 响应式设计，面包屑导航支持滑动
@@ -80,16 +80,16 @@ npm start
 
 ```bash
 # 启动
-pm2 start src/server.js --name openclaw-workspace-browser
+pm2 start src/server.js --name workspace-browser
 
 # 停止
-pm2 stop openclaw-workspace-browser
+pm2 stop workspace-browser
 
 # 重启
-pm2 restart openclaw-workspace-browser
+pm2 restart workspace-browser
 
 # 查看日志
-pm2 logs openclaw-workspace-browser
+pm2 logs workspace-browser
 
 # 开机自启
 pm2 startup
@@ -108,6 +108,9 @@ Markdown 文件会自动渲染，支持：
 - 标题、列表、代码块
 - 表格（支持全屏查看）
 - 链接、图片
+- Front Matter 会以紧凑标签形式显示在正文上方
+
+目录卡片会优先读取 Front Matter 中的 `title`、`name`、`description`、`desc`、`summary` 作为标题和摘要。
 
 ### 运行 HTML/JS 小游戏
 

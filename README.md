@@ -7,7 +7,7 @@ A lightweight web-based file browser designed for OpenClaw workspace, providing 
 ## Features
 
 - 📂 **File System Browsing** - Securely browse all files and folders within a specified directory
-- 📝 **Markdown Rendering** - Automatically render Markdown files with syntax highlighting and code blocks
+- 📝 **Markdown Rendering** - Automatically render Markdown files with syntax highlighting, code blocks, and compact Front Matter metadata chips
 - 🎮 **HTML Execution** - Run HTML files directly in the browser (great for games and demos)
 - 🖼️ **Image Preview** - Inline image preview without downloading
 - 📱 **Mobile Friendly** - Responsive design with scrollable breadcrumb navigation
@@ -80,16 +80,16 @@ Run with PM2 daemon:
 
 ```bash
 # Start
-pm2 start src/server.js --name openclaw-workspace-browser
+pm2 start src/server.js --name workspace-browser
 
 # Stop
-pm2 stop openclaw-workspace-browser
+pm2 stop workspace-browser
 
 # Restart
-pm2 restart openclaw-workspace-browser
+pm2 restart workspace-browser
 
 # View logs
-pm2 logs openclaw-workspace-browser
+pm2 logs workspace-browser
 
 # Auto-start on system boot
 pm2 startup
@@ -108,6 +108,9 @@ Markdown files are automatically rendered with support for:
 - Headings, lists, and code blocks
 - Tables (with fullscreen view)
 - Links and images
+- Front Matter displayed as compact metadata chips above the document body
+
+Supported Front Matter keys for list cards include `title`, `name`, `description`, `desc`, and `summary`.
 
 ### Running HTML/JS Games
 

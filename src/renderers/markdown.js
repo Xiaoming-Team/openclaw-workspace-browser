@@ -1,7 +1,7 @@
 const path = require('path');
 const { marked } = require('marked');
 const hljs = require('highlight.js');
-const { readUtf8, escHtml, buildFileBreadcrumb, renderLayout, BASE_DIR, SITE_CONFIG } = require('./helpers');
+const { readUtf8, escHtml, buildFileBreadcrumb, renderLayout, BASE_DIR, SITE_CONFIG, parseFrontMatter } = require('./helpers');
 
 // Configure marked with syntax highlighting
 marked.setOptions({
@@ -32,9 +32,24 @@ marked.parse = function (content) {
   return html;
 };
 
+function renderFrontMatter(attributes) {
+  const entries = Object.entries(attributes).filter(([, value]) => value !== '');
+  if (!entries.length) return '';
+
+  const items = entries.map(([key, value]) => {
+    const label = escHtml(key.replace(/[-_]+/g, ' '));
+    const content = escHtml(String(value));
+    return `<span class="frontmatter-chip"><span class="frontmatter-label">${label}</span><span class="frontmatter-value">${content}</span></span>`;
+  }).join('');
+
+  return `<section class="frontmatter-card">${items}</section>`;
+}
+
 async function renderMarkdown(filePath) {
   const raw = readUtf8(filePath);
-  const html = marked.parse(raw);
+  const { attributes, body } = parseFrontMatter(raw);
+  const frontMatterHtml = renderFrontMatter(attributes);
+  const html = marked.parse(body || raw);
   const relPath = path.relative(BASE_DIR, filePath);
   const fileName = path.basename(filePath);
   const breadcrumbItems = buildFileBreadcrumb(relPath);
@@ -42,7 +57,7 @@ async function renderMarkdown(filePath) {
 
   return await renderLayout({
     title: `${fileName} - ${SITE_CONFIG.title}`,
-    content: `<div id="rendered" class="content">${html}</div><pre id="raw" class="raw-view">${escapedRaw}</pre>`,
+    content: `<div id="rendered" class="content">${frontMatterHtml}${html}</div><pre id="raw" class="raw-view">${escapedRaw}</pre>`,
     breadcrumbItems,
     showToggle: true,
   });

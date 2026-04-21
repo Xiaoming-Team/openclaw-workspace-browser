@@ -43,26 +43,65 @@ function formatFileSize(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
+function parseFrontMatter(text) {
+  if (!text.startsWith('---\n') && !text.startsWith('---\r\n')) {
+    return { attributes: {}, body: text, raw: '' };
+  }
+
+  const newline = text.includes('\r\n') ? '\r\n' : '\n';
+  const fence = `---${newline}`;
+  const closingMarker = `${newline}---`;
+  const closingIdx = text.indexOf(closingMarker, fence.length);
+
+  if (closingIdx < 0) {
+    return { attributes: {}, body: text, raw: '' };
+  }
+
+  const raw = text.slice(0, closingIdx + closingMarker.length);
+  const frontMatterBody = text.slice(fence.length, closingIdx);
+  const bodyStart = closingIdx + closingMarker.length;
+  const rest = text.slice(bodyStart).replace(/^(\r?\n)+/, '');
+  const attributes = {};
+
+  for (const line of frontMatterBody.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const sepIdx = trimmed.indexOf(':');
+    if (sepIdx <= 0) continue;
+    const key = trimmed.slice(0, sepIdx).trim();
+    const value = trimmed.slice(sepIdx + 1).trim();
+    if (key) attributes[key] = value;
+  }
+
+  return { attributes, body: rest, raw };
+}
+
 function extractMdInfo(text) {
-  const lines = text.split('\n');
+  const { attributes, body } = parseFrontMatter(text);
+  const lines = body.split('\n');
   let title = null, desc = '';
+
+  title = attributes.title || attributes.name || null;
+  desc = attributes.description || attributes.desc || attributes.summary || '';
+
   for (const l of lines) {
     if (!title && l.startsWith('# ')) { title = l.slice(2).trim(); continue; }
     if (title) {
       const t = l.trim();
       if (t && !t.startsWith('#') && !t.startsWith('-') && !t.startsWith('*')
         && !t.startsWith('|') && !/^\d+\.\s/.test(t)) {
-        desc = t.slice(0, 120);
+        if (!desc) desc = t.slice(0, 120);
         break;
       }
     }
   }
-  if (!title) {
+  if (!title || !desc) {
     for (const l of lines) {
       const t = l.trim();
       if (t && !t.startsWith('#') && !t.startsWith('-') && !t.startsWith('*')
         && !t.startsWith('|') && !/^\d+\.\s/.test(t)) {
-        desc = t.slice(0, 120);
+        if (!desc) desc = t.slice(0, 120);
+        if (!title) title = t.slice(0, 120);
         break;
       }
     }
@@ -101,6 +140,6 @@ async function renderLayout(opts) {
 module.exports = {
   BASE_DIR, PINNED_FOLDERS, SKIP_NAMES, SITE_CONFIG,
   safeStat, readUtf8, escHtml, formatFileSize,
-  extractMdInfo, buildFileBreadcrumb, buildBreadcrumb,
+  parseFrontMatter, extractMdInfo, buildFileBreadcrumb, buildBreadcrumb,
   renderLayout,
 };
