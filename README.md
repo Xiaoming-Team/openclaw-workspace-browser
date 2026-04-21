@@ -32,6 +32,8 @@ npm install
 cp config.sample.json config.json
 ```
 
+`config.json` is intentionally ignored by Git and is expected to remain local to each deployment.
+
 2. Edit `config.json`:
 
 ```json
@@ -42,14 +44,10 @@ cp config.sample.json config.json
     "pass": "your_password"
   },
   "baseDir": "~/.openclaw/workspace",
-  "pinnedFolders": [
-    "blog",
-    "games",
-    "research",
-    "todo",
+  "pinnedPaths": [
     "projects",
-    "Notes",
-    "QuickNotes"
+    "research/llm",
+    "Notes"
   ],
   "skipNames": [
     "node_modules",
@@ -65,7 +63,7 @@ cp config.sample.json config.json
 - `port` - Server port number
 - `auth` - HTTP Basic Auth authentication (leave empty to disable authentication)
 - `baseDir` - Base directory to browse (supports `~` expansion to home directory)
-- `pinnedFolders` - Folders to pin at the top of the homepage
+- `pinnedPaths` - Files, folders, or nested subdirectories to pin at the top of the homepage (for example `research/llm` or `workspace/README.md`)
 - `skipNames` - File/folder names to hide during browsing
 
 ## Running
@@ -116,9 +114,9 @@ Markdown files are automatically rendered with support for:
 
 Supported Front Matter keys for list cards include `title`, `name`, `description`, `desc`, and `summary`.
 
-### Running HTML/JS Games
+### Running HTML/JS Files
 
-Place HTML files in the `games/` directory and run them directly in your browser.
+Any HTML file inside the browsed workspace can be opened directly in the browser. It does not need to live in a special `games/` directory.
 
 ### Downloading Files
 

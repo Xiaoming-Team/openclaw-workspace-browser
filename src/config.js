@@ -12,7 +12,7 @@ function loadConfig() {
   const defaultConfig = {
     port: 8888,
     baseDir: '~/.openclaw/workspace',
-    pinnedFolders: [],
+    pinnedPaths: [],
     skipNames: ['node_modules', '__pycache__', '.git', '.DS_Store'],
   };
 

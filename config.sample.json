@@ -5,12 +5,10 @@
     "pass": "your_password"
   },
   "baseDir": "~/.openclaw/workspace",
-  "pinnedFolders": [
-    "blog",
-    "games",
-    "research",
-    "todo",
-    "projects"
+  "pinnedPaths": [
+    "projects",
+    "research/llm",
+    "Notes"
   ],
   "skipNames": [
     "node_modules",

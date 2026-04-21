@@ -11,7 +11,7 @@ if (!path.isAbsolute(baseDir)) {
 }
 
 const BASE_DIR = baseDir;
-const PINNED_FOLDERS = config.pinnedFolders || [];
+const PINNED_PATHS = config.pinnedPaths || [];
 const SKIP_NAMES = new Set(config.skipNames || []);
 const LAYOUT_PATH = path.join(__dirname, '..', 'views', 'layout.ejs');
 
@@ -138,7 +138,7 @@ async function renderLayout(opts) {
 }
 
 module.exports = {
-  BASE_DIR, PINNED_FOLDERS, SKIP_NAMES, SITE_CONFIG,
+  BASE_DIR, PINNED_PATHS, SKIP_NAMES, SITE_CONFIG,
   safeStat, readUtf8, escHtml, formatFileSize,
   parseFrontMatter, extractMdInfo, buildFileBreadcrumb, buildBreadcrumb,
   renderLayout,

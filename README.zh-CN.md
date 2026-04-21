@@ -32,6 +32,8 @@ npm install
 cp config.sample.json config.json
 ```
 
+`config.json` 默认被 Git 忽略，这是有意设计，预期只保留在各自本地部署环境中。
+
 2. 编辑 `config.json`：
 
 ```json
@@ -42,14 +44,10 @@ cp config.sample.json config.json
     "pass": "your_password"
   },
   "baseDir": "~/.openclaw/workspace",
-  "pinnedFolders": [
-    "blog",
-    "games",
-    "research",
-    "todo",
+  "pinnedPaths": [
     "projects",
-    "Notes",
-    "QuickNotes"
+    "research/llm",
+    "Notes"
   ],
   "skipNames": [
     "node_modules",
@@ -65,7 +63,7 @@ cp config.sample.json config.json
 - `port` - 服务端口号
 - `auth` - HTTP Basic Auth 认证（留空则无需认证）
 - `baseDir` - 要浏览的基础目录（支持 `~` 展开为用户主目录）
-- `pinnedFolders` - 首页显示的固定文件夹
+- `pinnedPaths` - 首页显示的固定文件、文件夹或子目录（例如 `research/llm` 或 `workspace/README.md`）
 - `skipNames` - 浏览时隐藏的文件/文件夹名称
 
 ## 运行
@@ -116,9 +114,9 @@ Markdown 文件会自动渲染，支持：
 
 目录卡片会优先读取 Front Matter 中的 `title`、`name`、`description`、`desc`、`summary` 作为标题和摘要。
 
-### 运行 HTML/JS 小游戏
+### 运行 HTML/JS 文件
 
-将 HTML 文件放在 `games/` 目录下，访问时可直接在浏览器中运行。
+被浏览工作区里的任意 HTML 文件都可以直接在浏览器中打开运行，不需要放在特定的 `games/` 目录下。
 
 ### 下载文件
 

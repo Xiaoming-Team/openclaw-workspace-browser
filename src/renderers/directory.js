@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const {
-  BASE_DIR, PINNED_FOLDERS, SKIP_NAMES, SITE_CONFIG,
+  BASE_DIR, PINNED_PATHS, SKIP_NAMES, SITE_CONFIG,
   safeStat, readUtf8, escHtml, extractMdInfo,
   buildBreadcrumb, renderLayout,
 } = require('./helpers');
@@ -40,7 +40,7 @@ function sortEntries(entries, isRoot, currentRelPath = '') {
     const itemRelPath = currentRelPath ? `${currentRelPath}/${e.name}` : e.name;
 
     // Check if this entry is in the pinned list (supports both directories and files)
-    const pinnedIdx = PINNED_FOLDERS.findIndex(p => p.toLowerCase() === itemRelPath.toLowerCase());
+    const pinnedIdx = PINNED_PATHS.findIndex(p => p.toLowerCase() === itemRelPath.toLowerCase());
     if (pinnedIdx >= 0) {
       e._pinnedIdx = pinnedIdx;
       pinned.push(e);
