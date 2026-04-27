@@ -11,7 +11,7 @@
 ## 功能特点
 
 - 📂 **浏览文件系统** - 安全地浏览指定目录下的所有文件和文件夹
-- 📝 **Markdown 渲染** - 自动渲染 Markdown 文件，支持高亮、代码块和紧凑的 Front Matter 元信息标签
+- 📝 **Markdown 渲染** - 自动渲染 Markdown 文件，支持高亮、代码块、紧凑的 Front Matter 元信息标签，以及裸 URL 自动识别
 - 🎮 **HTML 运行** - HTML 文件可直接在浏览器中运行（适合小游戏、演示等）
 - 🖼️ **图片预览** - 内嵌图片预览，无需下载
 - 📱 **移动端友好** - 响应式设计，面包屑导航支持滑动
@@ -111,6 +111,7 @@ Markdown 文件会自动渲染，支持：
 - 表格（支持全屏查看）
 - 链接、图片
 - Front Matter 会以紧凑标签形式显示在正文上方
+- `example.com/path`、`https://foo.dev/bar` 这类裸 URL 自动识别并在新标签页打开，同时排除 `.js`、`.ts` 等明显更像代码文件的后缀
 
 目录卡片会优先读取 Front Matter 中的 `title`、`name`、`description`、`desc`、`summary` 作为标题和摘要。
 

@@ -11,7 +11,7 @@ A lightweight web-based file browser designed for OpenClaw workspace, providing 
 ## Features
 
 - 📂 **File System Browsing** - Securely browse all files and folders within a specified directory
-- 📝 **Markdown Rendering** - Automatically render Markdown files with syntax highlighting, code blocks, and compact Front Matter metadata chips
+- 📝 **Markdown Rendering** - Automatically render Markdown files with syntax highlighting, code blocks, compact Front Matter metadata chips, and auto-linked bare URLs
 - 🎮 **HTML Execution** - Run HTML files directly in the browser (great for games and demos)
 - 🖼️ **Image Preview** - Inline image preview without downloading
 - 📱 **Mobile Friendly** - Responsive design with scrollable breadcrumb navigation
@@ -111,6 +111,7 @@ Markdown files are automatically rendered with support for:
 - Tables (with fullscreen view)
 - Links and images
 - Front Matter displayed as compact metadata chips above the document body
+- Bare URLs such as `example.com/path` and `https://foo.dev/bar` (opened in a new tab, with common code-like suffixes such as `.js` and `.ts` excluded)
 
 Supported Front Matter keys for list cards include `title`, `name`, `description`, `desc`, and `summary`.
 
